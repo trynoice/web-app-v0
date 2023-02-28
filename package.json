@@ -2,7 +2,7 @@
   "name": "web-app-v0",
   "version": "0.0.0",
   "private": true,
-  "description": "Noice web application initial prototype",
+  "description": "An initial prototype of a web application for Noice.",
   "author": "Ashutosh Gangwar <ashutoshgngwr@gmail.com>",
   "repository": {
     "type": "git",

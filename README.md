@@ -5,6 +5,11 @@
 </p>
 <h1 align="center">Noice Web App Prototype</h1>
 
+This is an initial prototype of a web application for Noice. It showcases our
+free sound library with fundamental playback features, allowing us to evaluate
+our web-based sound engine. If you encounter unexpected behaviour, please inform
+us about it at [trynoiceapp@gmail.com](mailto:trynoiceapp@gmail.com).
+
 ## License
 
 [GNU GPL v3](LICENSE)
