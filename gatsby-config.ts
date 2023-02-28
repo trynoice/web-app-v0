@@ -4,6 +4,15 @@ const config: GatsbyConfig = {
   jsxRuntime: "automatic",
   graphqlTypegen: true,
   trailingSlash: "never",
+  siteMetadata: {
+    title: "Noice: Natural calming noise",
+    description:
+      "Customisable soundscapes with Noice - Create personalised ambient atmospheres by blending various sounds and adjusting volume levels.",
+    siteUrl:
+      (process.env.CONTEXT === "production"
+        ? process.env.URL
+        : process.env.DEPLOY_PRIME_URL) || "http://localhost:8000",
+  },
   plugins: [
     "@chakra-ui/gatsby-plugin",
     {

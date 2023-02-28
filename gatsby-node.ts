@@ -4,6 +4,16 @@ import { getLibraryManifest } from "./src/api/cdn";
 export const createSchemaCustomization: GatsbyNode["createSchemaCustomization"] =
   ({ actions: { createTypes } }) =>
     createTypes(`
+      type Site {
+        siteMetadata: SiteMetadata!
+      }
+
+      type SiteMetadata {
+        title: String!
+        description: String!
+        siteUrl: String!
+      }
+
       type SoundGroup implements Node {
         id: String!
         name: String!
