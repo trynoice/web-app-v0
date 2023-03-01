@@ -21,8 +21,8 @@ export const baseTheme = {};
 
 export default extendTheme({
   colors: {
-    black: "#1d1d26",
-    white: "#fefefe",
+    black: "#1d1d08",
+    white: "#fdfdf8",
     primary: {
       50: "#eefaf6",
       100: "#bcead9",

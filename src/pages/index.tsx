@@ -64,7 +64,7 @@ export default function Home(
     <VStack
       w={"full"}
       p={{ base: 4, md: 6 }}
-      spacing={8}
+      spacing={12}
       bg={useColorModeValue("white", "black")}
     >
       <NavBar title={props.data.site!.siteMetadata.title} />
@@ -87,15 +87,15 @@ function NavBar(props: NavBarProps): ReactElement {
       px={{ base: 6, md: 8 }}
       py={{ base: 3, md: 4 }}
       rounded={{ base: "2xl", md: "3xl" }}
-      bg={useColorModeValue("primary.100", "primary.800")}
+      bg={useColorModeValue("primary.50", "primary.900")}
     >
       <ChakraLink
         as={GatsbyLink}
         to={"/"}
         aria-label={"Go to homepage"}
         title={props.title}
-        color={useColorModeValue("primary.800", "primary.100")}
-        _hover={{ color: useColorModeValue("primary.500", "primary.200") }}
+        color={useColorModeValue("primary.900", "primary.50")}
+        _hover={{ color: "primary.400" }}
       >
         <AppIcon w={{ base: 28, md: 32 }} h={"auto"} fill={"currentColor"} />
       </ChakraLink>
@@ -124,7 +124,7 @@ function PrototypeWarning(): ReactElement {
         variant={"left-accent"}
       >
         <AlertDescription px={4} py={2} fontSize={"sm"}>
-          This is an initial prototype of a web application for Noice. It
+          This is an early prototype of a web application for Noice. It
           showcases our free sound library with fundamental playback features,
           allowing us to evaluate our web-based sound engine. If you encounter
           unexpected behaviour, please inform us about it at{" "}
