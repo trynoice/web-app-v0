@@ -1,4 +1,8 @@
 import {
+  Alert,
+  AlertDescription,
+  CloseButton,
+  Collapse,
   HStack,
   Icon,
   IconButton,
@@ -6,6 +10,7 @@ import {
   Spacer,
   useColorMode,
   useColorModeValue,
+  useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
@@ -52,8 +57,6 @@ export function Head(props: PageProps<Queries.HomeQuery>): React.ReactElement {
   );
 }
 
-const contentPaddingX = { base: 6, md: 8 };
-
 export default function Home(
   props: PageProps<Queries.HomeQuery>
 ): ReactElement {
@@ -61,10 +64,11 @@ export default function Home(
     <VStack
       w={"full"}
       p={{ base: 4, md: 6 }}
-      spacing={0}
+      spacing={8}
       bg={useColorModeValue("white", "black")}
     >
       <NavBar title={props.data.site!.siteMetadata.title} />
+      <PrototypeWarning />
     </VStack>
   );
 }
@@ -80,7 +84,7 @@ function NavBar(props: NavBarProps): ReactElement {
     <HStack
       w={"full"}
       maxW={"maxContentWidth"}
-      px={contentPaddingX}
+      px={{ base: 6, md: 8 }}
       py={{ base: 3, md: 4 }}
       rounded={{ base: "2xl", md: "3xl" }}
       bg={useColorModeValue("primary.100", "primary.800")}
@@ -105,5 +109,41 @@ function NavBar(props: NavBarProps): ReactElement {
         colorScheme={"primary"}
       />
     </HStack>
+  );
+}
+
+function PrototypeWarning(): ReactElement {
+  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
+
+  return (
+    <Collapse in={isOpen}>
+      <Alert
+        maxW={"3xl"}
+        rounded={"xl"}
+        status={"warning"}
+        variant={"left-accent"}
+      >
+        <AlertDescription px={4} py={2} fontSize={"sm"}>
+          This is an initial prototype of a web application for Noice. It
+          showcases our free sound library with fundamental playback features,
+          allowing us to evaluate our web-based sound engine. If you encounter
+          unexpected behaviour, please inform us about it at{" "}
+          <ChakraLink
+            href={"mailto:trynoiceapp@gmail.com"}
+            color={"primary.400"}
+          >
+            trynoiceapp@gmail.com
+          </ChakraLink>
+          .
+        </AlertDescription>
+        <CloseButton
+          alignSelf={"flex-start"}
+          position={"relative"}
+          right={-1}
+          top={-1}
+          onClick={onClose}
+        />
+      </Alert>
+    </Collapse>
   );
 }
