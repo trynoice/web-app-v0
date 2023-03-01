@@ -20,8 +20,8 @@ export const createSchemaCustomization: GatsbyNode["createSchemaCustomization"] 
         name: String!
         icon: String!
         maxSilence: Int!
-        sources: [SoundSource]
-        tags: [String]
+        sources: [SoundSource!]!
+        tags: [String!]!
       }
 
       type SoundSource {

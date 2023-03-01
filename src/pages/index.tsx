@@ -8,6 +8,10 @@ import {
   Icon,
   IconButton,
   Image,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
   Link as ChakraLink,
   SimpleGrid,
   Slider,
@@ -15,14 +19,23 @@ import {
   SliderThumb,
   SliderTrack,
   Spacer,
+  Text,
   useColorMode,
   useColorModeValue,
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
-import { Fragment, ReactElement } from "react";
-import { TbMoon, TbPlayerPlay, TbSun, TbVolume } from "react-icons/tb";
+import { Fragment, ReactElement, useMemo, useRef, useState } from "react";
+import {
+  TbListSearch,
+  TbMoon,
+  TbPlayerPlay,
+  TbSearch,
+  TbSun,
+  TbVolume,
+  TbX,
+} from "react-icons/tb";
 import AppIcon from "../assets/app-icon";
 import SocialCardImage from "../assets/social-card-image.png";
 
@@ -38,9 +51,11 @@ export const pageQuery = graphql`
 
     allSound(sort: [{ group: ASC }, { name: ASC }]) {
       nodes {
+        id
         icon
         name
         group
+        tags
       }
     }
   }
@@ -75,18 +90,30 @@ export function Head(props: PageProps<Queries.HomeQuery>): React.ReactElement {
 export default function Home(
   props: PageProps<Queries.HomeQuery>
 ): ReactElement {
-  const sounds = props.data.allSound.nodes as Queries.Sound[];
+  const groupedSounds = (props.data.allSound.nodes as Queries.Sound[]).reduce(
+    (accumulator, sound) => {
+      if (accumulator.has(sound.group)) {
+        accumulator.get(sound.group)!.push(sound);
+      } else {
+        accumulator.set(sound.group, [sound]);
+      }
+
+      return accumulator;
+    },
+    new Map<string, Queries.Sound[]>()
+  );
 
   return (
     <VStack
       w={"full"}
+      minH={"100vh"}
       p={{ base: 4, md: 6 }}
       spacing={16}
       bg={useColorModeValue("white", "black")}
     >
       <NavBar title={props.data.site!.siteMetadata.title} />
       <PrototypeWarning />
-      <SoundCatalogue sounds={sounds} />
+      <SoundDashboard groupedSounds={groupedSounds} />
     </VStack>
   );
 }
@@ -155,37 +182,145 @@ function PrototypeWarning(): ReactElement {
           .
         </AlertDescription>
         <CloseButton
+          onClick={onClose}
           alignSelf={"flex-start"}
           position={"relative"}
           right={-1}
           top={-1}
-          onClick={onClose}
+          rounded={"full"}
         />
       </Alert>
     </Collapse>
   );
 }
 
+interface SoundDashboardProps {
+  readonly groupedSounds: Map<string, Queries.Sound[]>;
+}
+
+function SoundDashboard(props: SoundDashboardProps): ReactElement {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredSounds = useMemo(
+    () => filterGroupedSounds(props.groupedSounds, searchQuery),
+    [searchQuery]
+  );
+
+  return (
+    <Fragment>
+      <SearchInput onChange={setSearchQuery} />
+      {filteredSounds.size > 0 ? (
+        <SoundCatalogue groupedSounds={filteredSounds} />
+      ) : (
+        <VStack
+          w={"full"}
+          maxW={"lg"}
+          spacing={4}
+          color={useColorModeValue("gray.400", "gray.500")}
+          textAlign={"center"}
+        >
+          <Icon as={TbListSearch} boxSize={12} />
+          <Heading as={"h3"} size={"lg"}>
+            No results found!
+          </Heading>
+          <Text>
+            Oops! No sound matches your search criteria. Try refining your
+            search or check back later for new additions.
+          </Text>
+        </VStack>
+      )}
+    </Fragment>
+  );
+}
+
+function filterGroupedSounds(
+  input: Map<string, Queries.Sound[]>,
+  searchQuery: string
+): Map<string, Queries.Sound[]> {
+  searchQuery = searchQuery.toLowerCase().trim();
+  if (searchQuery.length === 0) {
+    return input;
+  }
+
+  const result = new Map<string, Queries.Sound[]>();
+  input.forEach((sounds, group) => {
+    const filteredSounds = sounds.filter(
+      (sound) =>
+        sound.name.toLowerCase().includes(searchQuery) ||
+        sound.group.toLowerCase().includes(searchQuery) ||
+        sound.tags.some((tag) => tag.toLowerCase().includes(searchQuery))
+    );
+
+    if (filteredSounds.length > 0) {
+      result.set(group, filteredSounds);
+    }
+  });
+
+  return result;
+}
+
+interface SearchInputProps {
+  readonly onChange: (value: string) => void;
+}
+
+function SearchInput(props: SearchInputProps): ReactElement {
+  const fieldRef = useRef<HTMLInputElement>(null);
+  const [isEmpty, setEmpty] = useState(true);
+  const handleChange = (value: string) => {
+    setEmpty(value.length === 0);
+    props.onChange(value);
+  };
+
+  return (
+    <InputGroup maxW={"xs"} bg={"none"}>
+      <InputLeftElement pointerEvents={"none"}>
+        <Icon
+          as={TbSearch}
+          color={useColorModeValue("blackAlpha.600", "whiteAlpha.700")}
+        />
+      </InputLeftElement>
+      <Input
+        ref={fieldRef}
+        type={"text"}
+        placeholder={"Search sounds"}
+        onChange={(event) => handleChange(event.target.value)}
+        border={"none"}
+        rounded={"full"}
+        bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
+        _placeholder={{
+          color: useColorModeValue("blackAlpha.500", "whiteAlpha.600"),
+        }}
+      />
+      <InputRightElement hidden={isEmpty}>
+        <Icon
+          as={TbX}
+          onClick={() => {
+            if (fieldRef.current != null) fieldRef.current.value = "";
+            handleChange("");
+          }}
+          title={"Clear"}
+          color={useColorModeValue("blackAlpha.600", "whiteAlpha.700")}
+          cursor={"pointer"}
+        />
+      </InputRightElement>
+    </InputGroup>
+  );
+}
+
 interface SoundCatalogueProps {
-  readonly sounds: Queries.Sound[];
+  readonly groupedSounds: Map<string, Queries.Sound[]>;
 }
 
 function SoundCatalogue(props: SoundCatalogueProps): ReactElement {
-  const groupedSounds = props.sounds.reduce((accumulator, sound) => {
-    if (accumulator.has(sound.group)) {
-      accumulator.get(sound.group)!.push(sound);
-    } else {
-      accumulator.set(sound.group, [sound]);
-    }
-
-    return accumulator;
-  }, new Map<string, Queries.Sound[]>());
-
   return (
     <VStack w={"full"} maxW={"maxContentWidth"} spacing={16}>
-      {Array.from(groupedSounds.entries()).map(([group, sounds]) => (
-        <VStack w={"full"} align={"flex-start"} spacing={8}>
-          <Heading key={`SoundGroup#${group}`} as={"h2"} px={2} size={"md"}>
+      {Array.from(props.groupedSounds.entries()).map(([group, sounds]) => (
+        <VStack
+          key={`SoundGroup#${group}`}
+          w={"full"}
+          align={"flex-start"}
+          spacing={8}
+        >
+          <Heading as={"h2"} px={2} size={"md"}>
             {group}
           </Heading>
           <SimpleGrid
