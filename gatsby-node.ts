@@ -14,24 +14,14 @@ export const createSchemaCustomization: GatsbyNode["createSchemaCustomization"] 
         siteUrl: String!
       }
 
-      type SoundGroup implements Node {
-        id: String!
-        name: String!
-      }
-
       type Sound implements Node {
         id: String!
-        group: SoundGroup! @link
+        group: String!
         name: String!
         icon: String!
         maxSilence: Int!
-        segments: [SoundSegment]
         sources: [SoundSource]
-      }
-
-      type SoundSegment {
-        name: String!
-        isFree: Boolean!
+        tags: [String]
       }
 
       type SoundSource {
@@ -52,27 +42,27 @@ export const sourceNodes: GatsbyNode["sourceNodes"] = async ({
   createContentDigest,
 }) => {
   const manifest = await getLibraryManifest();
-  manifest.groups.forEach((group) => {
-    createNode({
-      ...group,
-      internal: {
-        type: "SoundGroup",
-        contentDigest: createContentDigest(group),
-      },
-    });
-  });
+  const groups = manifest.groups.reduce((accumulator, group) => {
+    accumulator.set(group.id, group.name);
+    return accumulator;
+  }, new Map<string, string>());
+
+  const tags = manifest.tags.reduce((accumulator, tag) => {
+    accumulator.set(tag.id, tag.name);
+    return accumulator;
+  }, new Map<string, string>());
 
   manifest.sounds
     .filter((sound) => sound.segments.some((segment) => segment.isFree))
     .forEach((sound) => {
       createNode({
         id: sound.id,
-        group: sound.groupId,
+        group: groups.get(sound.groupId)!,
         name: sound.name,
         icon: sound.icon,
         maxSilence: sound.maxSilence,
-        segments: sound.segments,
         sources: sound.sources,
+        tags: sound.tags.map((tagId) => tags.get(tagId)!),
         internal: {
           type: "Sound",
           contentDigest: createContentDigest(sound),
