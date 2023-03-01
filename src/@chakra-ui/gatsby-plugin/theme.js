@@ -24,16 +24,16 @@ export default extendTheme({
     black: "#1d1d26",
     white: "#fefefe",
     primary: {
-      50: "#fbfdf8",
-      100: "#6fe8bb",
-      200: "#59e4b1",
-      300: "#43e1a7",
-      400: "#2ddd9c",
-      500: "#1eb980",
-      600: "#178d62",
-      700: "#137752",
-      800: "#106143",
-      900: "#093525",
+      50: "#eefaf6",
+      100: "#bcead9",
+      200: "#7dd7b6",
+      300: "#27bc85",
+      400: "#1eb980",
+      500: "#178e62",
+      600: "#137853",
+      700: "#106043",
+      800: "#0d5238",
+      900: "#0a3b29",
     },
   },
   components: {
@@ -62,6 +62,11 @@ export default extendTheme({
         WebkitFontSmoothing: "antialiased",
         MozOsxFontSmoothing: "grayscale",
       },
+    },
+  },
+  semanticTokens: {
+    sizes: {
+      maxContentWidth: "5xl",
     },
   },
 });
