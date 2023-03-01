@@ -3,10 +3,17 @@ import {
   AlertDescription,
   CloseButton,
   Collapse,
+  Heading,
   HStack,
   Icon,
   IconButton,
+  Image,
   Link as ChakraLink,
+  SimpleGrid,
+  Slider,
+  SliderFilledTrack,
+  SliderThumb,
+  SliderTrack,
   Spacer,
   useColorMode,
   useColorModeValue,
@@ -15,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
 import { Fragment, ReactElement } from "react";
-import { TbMoon, TbSun } from "react-icons/tb";
+import { TbMoon, TbPlayerPlay, TbSun, TbVolume } from "react-icons/tb";
 import AppIcon from "../assets/app-icon";
 import SocialCardImage from "../assets/social-card-image.png";
 
@@ -26,6 +33,14 @@ export const pageQuery = graphql`
         title
         description
         siteUrl
+      }
+    }
+
+    allSound(sort: [{ group: ASC }, { name: ASC }]) {
+      nodes {
+        icon
+        name
+        group
       }
     }
   }
@@ -60,15 +75,18 @@ export function Head(props: PageProps<Queries.HomeQuery>): React.ReactElement {
 export default function Home(
   props: PageProps<Queries.HomeQuery>
 ): ReactElement {
+  const sounds = props.data.allSound.nodes as Queries.Sound[];
+
   return (
     <VStack
       w={"full"}
       p={{ base: 4, md: 6 }}
-      spacing={12}
+      spacing={16}
       bg={useColorModeValue("white", "black")}
     >
       <NavBar title={props.data.site!.siteMetadata.title} />
       <PrototypeWarning />
+      <SoundCatalogue sounds={sounds} />
     </VStack>
   );
 }
@@ -145,5 +163,101 @@ function PrototypeWarning(): ReactElement {
         />
       </Alert>
     </Collapse>
+  );
+}
+
+interface SoundCatalogueProps {
+  readonly sounds: Queries.Sound[];
+}
+
+function SoundCatalogue(props: SoundCatalogueProps): ReactElement {
+  const groupedSounds = props.sounds.reduce((accumulator, sound) => {
+    if (accumulator.has(sound.group)) {
+      accumulator.get(sound.group)!.push(sound);
+    } else {
+      accumulator.set(sound.group, [sound]);
+    }
+
+    return accumulator;
+  }, new Map<string, Queries.Sound[]>());
+
+  return (
+    <VStack w={"full"} maxW={"maxContentWidth"} spacing={16}>
+      {Array.from(groupedSounds.entries()).map(([group, sounds]) => (
+        <VStack w={"full"} align={"flex-start"} spacing={8}>
+          <Heading key={`SoundGroup#${group}`} as={"h2"} px={2} size={"md"}>
+            {group}
+          </Heading>
+          <SimpleGrid
+            w={"full"}
+            columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+            justifyItems={"center"}
+            spacingX={8}
+            spacingY={6}
+          >
+            {sounds.map((sound) => (
+              <Sound key={`Sound#${sound.id}`} sound={sound} />
+            ))}
+          </SimpleGrid>
+        </VStack>
+      ))}
+    </VStack>
+  );
+}
+
+interface SoundProps {
+  readonly sound: Queries.Sound;
+}
+
+function Sound(props: SoundProps): ReactElement {
+  return (
+    <VStack
+      w={"full"}
+      maxW={64}
+      p={6}
+      spacing={4}
+      rounded={"2xl"}
+      bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
+    >
+      <Image
+        src={props.sound.icon}
+        aria-hidden={true}
+        boxSize={{ base: 20, md: 24 }}
+        filter={useColorModeValue(
+          "invert(57%) sepia(63%) saturate(488%) hue-rotate(106deg) brightness(94%) contrast(88%)",
+          "invert(39%) sepia(80%) saturate(424%) hue-rotate(106deg) brightness(96%) contrast(91%)"
+        )}
+      />
+
+      <Heading as={"h3"} size={"xs"}>
+        {props.sound.name}
+      </Heading>
+      {/* padding right is needed because otherwise, the slider thumb overflows the container */}
+      <HStack w={"full"} pr={2} spacing={4}>
+        <IconButton
+          icon={<Icon as={TbPlayerPlay} boxSize={5} />}
+          aria-label={`play ${props.sound.name}`}
+          size={"sm"}
+          colorScheme={"primary"}
+          variant={"outline"}
+          isRound={true}
+        />
+        <Slider
+          aria-label={`volume slider for ${props.sound.name}`}
+          colorScheme={"primary"}
+          min={0}
+          max={1}
+          step={0.01}
+          defaultValue={1}
+        >
+          <SliderTrack>
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb boxSize={5} color={"primary.500"}>
+            <TbVolume />
+          </SliderThumb>
+        </Slider>
+      </HStack>
+    </VStack>
   );
 }
