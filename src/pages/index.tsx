@@ -20,6 +20,7 @@ import {
   SliderTrack,
   Spacer,
   Text,
+  Tooltip,
   useColorMode,
   useColorModeValue,
   useDisclosure,
@@ -34,6 +35,8 @@ import {
   TbSearch,
   TbSun,
   TbVolume,
+  TbVolume2,
+  TbVolume3,
   TbX,
 } from "react-icons/tb";
 import AppIcon from "../assets/app-icon";
@@ -207,7 +210,17 @@ function SoundDashboard(props: SoundDashboardProps): ReactElement {
 
   return (
     <Fragment>
-      <SearchInput onChange={setSearchQuery} />
+      <SimpleGrid
+        w={"full"}
+        maxW={{ base: "xs", md: "2xl" }}
+        columns={{ base: 1, md: 2 }}
+        spacingX={12}
+        spacingY={6}
+      >
+        <GlobalSoundControls />
+        <SearchInput onChange={setSearchQuery} />
+      </SimpleGrid>
+
       {filteredSounds.size > 0 ? (
         <SoundCatalogue groupedSounds={filteredSounds} />
       ) : (
@@ -258,6 +271,35 @@ function filterGroupedSounds(
   return result;
 }
 
+function GlobalSoundControls(): ReactElement {
+  return (
+    <HStack
+      h={10}
+      pl={{ base: 3, md: 6 }}
+      pr={{ base: 9, md: 12 }}
+      spacing={4}
+      bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
+      rounded={"full"}
+    >
+      <Tooltip label={"Resume all sounds"}>
+        <IconButton
+          icon={<Icon as={TbPlayerPlay} boxSize={5} />}
+          aria-label={"resume all sounds"}
+          isDisabled={true}
+          variant={"ghost"}
+          colorScheme={"primary"}
+          rounded={"full"}
+        />
+      </Tooltip>
+      <VolumeSlider
+        label={"master volume"}
+        isDisabled={true}
+        onChange={() => undefined}
+      />
+    </HStack>
+  );
+}
+
 interface SearchInputProps {
   readonly onChange: (value: string) => void;
 }
@@ -271,7 +313,7 @@ function SearchInput(props: SearchInputProps): ReactElement {
   };
 
   return (
-    <InputGroup maxW={"xs"} bg={"none"}>
+    <InputGroup bg={"none"}>
       <InputLeftElement pointerEvents={"none"}>
         <Icon
           as={TbSearch}
@@ -377,22 +419,50 @@ function Sound(props: SoundProps): ReactElement {
           variant={"outline"}
           isRound={true}
         />
-        <Slider
-          aria-label={`volume slider for ${props.sound.name}`}
-          colorScheme={"primary"}
-          min={0}
-          max={1}
-          step={0.01}
-          defaultValue={1}
-        >
-          <SliderTrack>
-            <SliderFilledTrack />
-          </SliderTrack>
-          <SliderThumb boxSize={5} color={"primary.500"}>
-            <TbVolume />
-          </SliderThumb>
-        </Slider>
+        <VolumeSlider
+          label={`volume slider for ${props.sound.name}`}
+          onChange={() => undefined}
+        />
       </HStack>
     </VStack>
+  );
+}
+
+interface VolumeSliderProps {
+  readonly label: string;
+  readonly onChange: (volume: number) => void;
+  readonly isDisabled?: boolean;
+}
+
+function VolumeSlider(props: VolumeSliderProps) {
+  const [value, setValue] = useState(1);
+
+  return (
+    <Slider
+      aria-label={props.label}
+      isDisabled={props.isDisabled}
+      colorScheme={"primary"}
+      min={0}
+      max={1}
+      step={0.01}
+      defaultValue={1}
+      onChange={(value) => {
+        props.onChange(value);
+        setValue(value);
+      }}
+    >
+      <SliderTrack bg={useColorModeValue("blackAlpha.300", "whiteAlpha.400")}>
+        <SliderFilledTrack />
+      </SliderTrack>
+      <SliderThumb boxSize={5} color={"primary.500"}>
+        {value === 0 ? (
+          <TbVolume3 />
+        ) : value < 0.5 ? (
+          <TbVolume2 />
+        ) : (
+          <TbVolume />
+        )}
+      </SliderThumb>
+    </Slider>
   );
 }
