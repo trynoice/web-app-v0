@@ -57,8 +57,8 @@ import {
   useState,
 } from "react";
 import { IconType } from "react-icons";
-import { BsSoundwave } from "react-icons/bs";
 import {
+  TbCellSignal1,
   TbListSearch,
   TbMoon,
   TbPlayerPause,
@@ -169,6 +169,9 @@ interface NavBarProps {
 
 function NavBar(props: NavBarProps): ReactElement {
   const { colorMode, toggleColorMode } = useColorMode();
+  const colorModeToggleLabel = `Toggle ${
+    colorMode === "light" ? "Dark" : "Light"
+  } mode`;
 
   return (
     <HStack
@@ -190,20 +193,20 @@ function NavBar(props: NavBarProps): ReactElement {
         <AppIcon w={{ base: 28, md: 32 }} h={"auto"} fill={"currentColor"} />
       </ChakraLink>
       <Spacer minW={4} />
-      <Tooltip
-        label={`Toggle ${colorMode === "light" ? "Dark" : "Light"} mode`}
-        closeDelay={500}
-        hasArrow={true}
-      >
+      <Tooltip label={colorModeToggleLabel} closeDelay={500} hasArrow={true}>
         <IconButton
           icon={
-            <Icon as={colorMode === "light" ? TbMoon : TbSun} boxSize={5} />
+            <Icon
+              as={colorMode === "light" ? TbMoon : TbSun}
+              boxSize={5}
+              color={useColorModeValue("primary.600", "primary.200")}
+            />
           }
-          aria-label={"toggle color mode"}
+          aria-label={colorModeToggleLabel}
           onClick={toggleColorMode}
           isRound={true}
           variant={"ghost"}
-          colorScheme={"primary"}
+          colorScheme={useColorModeValue("blackAlpha", "gray")}
         />
       </Tooltip>
     </HStack>
@@ -344,8 +347,8 @@ function GlobalSoundControls(): ReactElement {
       rounded={"full"}
     >
       <GlobalSoundControlButton
-        label={"Fade duration"}
-        icon={BsSoundwave}
+        label={"Fade Duration"}
+        icon={TbCellSignal1}
         onClick={onOpenFadeDurationControls}
       />
 
@@ -355,14 +358,14 @@ function GlobalSoundControls(): ReactElement {
       />
 
       <GlobalSoundControlButton
-        label={`${isPlaying ? "Pause" : "Resume"} all sounds`}
+        label={`${isPlaying ? "Pause" : "Resume"} All Sounds`}
         icon={isPlaying ? TbPlayerPause : TbPlayerPlay}
         onClick={isPlaying ? pause : resume}
         isDisabled={isIdle}
       />
 
       <GlobalSoundControlButton
-        label={"Stop all sounds"}
+        label={"Stop All Sounds"}
         icon={TbPlayerStop}
         onClick={stop}
         isDisabled={isIdle}
