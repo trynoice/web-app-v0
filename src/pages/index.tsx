@@ -26,12 +26,25 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
+import {
+  ConsoleLogger,
+  ConsoleLogLevel,
+  SoundPlayerManagerState,
+  SoundPlayerState,
+} from "@trynoice/january";
+import {
+  SoundPlayerManagerProvider,
+  useSoundPlayer,
+  useSoundPlayerManager,
+} from "@trynoice/january/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
 import { Fragment, ReactElement, useMemo, useRef, useState } from "react";
 import {
   TbListSearch,
   TbMoon,
+  TbPlayerPause,
   TbPlayerPlay,
+  TbPlayerStop,
   TbSearch,
   TbSun,
   TbVolume,
@@ -39,6 +52,7 @@ import {
   TbVolume3,
   TbX,
 } from "react-icons/tb";
+import { JanuaryCdnClient } from "../api/cdn";
 import AppIcon from "../assets/app-icon";
 import SocialCardImage from "../assets/social-card-image.png";
 
@@ -90,6 +104,13 @@ export function Head(props: PageProps<Queries.HomeQuery>): React.ReactElement {
   );
 }
 
+const cdnClient = new JanuaryCdnClient();
+const logger = new ConsoleLogger(
+  process.env.NODE_ENV === "production"
+    ? ConsoleLogLevel.Warn
+    : ConsoleLogLevel.Info
+);
+
 export default function Home(
   props: PageProps<Queries.HomeQuery>
 ): ReactElement {
@@ -116,7 +137,9 @@ export default function Home(
     >
       <NavBar title={props.data.site!.siteMetadata.title} />
       <PrototypeWarning />
-      <SoundDashboard groupedSounds={groupedSounds} />
+      <SoundPlayerManagerProvider cdnClient={cdnClient} logger={logger}>
+        <SoundDashboard groupedSounds={groupedSounds} />
+      </SoundPlayerManagerProvider>
     </VStack>
   );
 }
@@ -272,6 +295,11 @@ function filterGroupedSounds(
 }
 
 function GlobalSoundControls(): ReactElement {
+  const { state, volume, setVolume, togglePlayback } = useSoundPlayerManager();
+  const isIdle = state === SoundPlayerManagerState.Idle;
+  const isPlaying = state === SoundPlayerManagerState.Playing;
+  const playButtonLabel = `${isPlaying ? "Pause" : "Resume"} all sounds`;
+
   return (
     <HStack
       h={10}
@@ -281,20 +309,24 @@ function GlobalSoundControls(): ReactElement {
       bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
       rounded={"full"}
     >
-      <Tooltip label={"Resume all sounds"}>
+      <Tooltip label={playButtonLabel}>
         <IconButton
-          icon={<Icon as={TbPlayerPlay} boxSize={5} />}
-          aria-label={"resume all sounds"}
-          isDisabled={true}
+          icon={
+            <Icon as={isPlaying ? TbPlayerPause : TbPlayerPlay} boxSize={5} />
+          }
+          aria-label={playButtonLabel}
+          isDisabled={isIdle}
+          onClick={togglePlayback}
           variant={"ghost"}
           colorScheme={"primary"}
           rounded={"full"}
         />
       </Tooltip>
       <VolumeSlider
-        label={"master volume"}
-        isDisabled={true}
-        onChange={() => undefined}
+        label={"Master Volume"}
+        value={volume}
+        onChange={setVolume}
+        isDisabled={isIdle}
       />
     </HStack>
   );
@@ -387,6 +419,14 @@ interface SoundProps {
 }
 
 function Sound(props: SoundProps): ReactElement {
+  const { state, volume, setVolume, togglePlayback } = useSoundPlayer(
+    props.sound.id
+  );
+
+  const isBuffering = state === SoundPlayerState.Buffering;
+  const isStopped =
+    state === SoundPlayerState.Stopping || state === SoundPlayerState.Stopped;
+
   return (
     <VStack
       w={"full"}
@@ -412,8 +452,12 @@ function Sound(props: SoundProps): ReactElement {
       {/* padding right is needed because otherwise, the slider thumb overflows the container */}
       <HStack w={"full"} pr={2} spacing={4}>
         <IconButton
-          icon={<Icon as={TbPlayerPlay} boxSize={5} />}
+          icon={
+            <Icon as={isStopped ? TbPlayerPlay : TbPlayerStop} boxSize={5} />
+          }
           aria-label={`play ${props.sound.name}`}
+          isLoading={isBuffering}
+          onClick={togglePlayback}
           size={"sm"}
           colorScheme={"primary"}
           variant={"outline"}
@@ -421,7 +465,8 @@ function Sound(props: SoundProps): ReactElement {
         />
         <VolumeSlider
           label={`volume slider for ${props.sound.name}`}
-          onChange={() => undefined}
+          value={volume}
+          onChange={setVolume}
         />
       </HStack>
     </VStack>
@@ -430,6 +475,7 @@ function Sound(props: SoundProps): ReactElement {
 
 interface VolumeSliderProps {
   readonly label: string;
+  readonly value: number;
   readonly onChange: (volume: number) => void;
   readonly isDisabled?: boolean;
 }
@@ -445,7 +491,7 @@ function VolumeSlider(props: VolumeSliderProps) {
       min={0}
       max={1}
       step={0.01}
-      defaultValue={1}
+      value={props.value}
       onChange={(value) => {
         props.onChange(value);
         setValue(value);

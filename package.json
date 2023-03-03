@@ -27,6 +27,7 @@
     "@emotion/styled": "^11.10.6",
     "@fontsource/poppins": "^4.5.10",
     "@fontsource/urbanist": "^4.5.17",
+    "@trynoice/january": "github:trynoice/january#main",
     "framer-motion": "^10.0.1",
     "gatsby": "^5.7.0",
     "gatsby-plugin-manifest": "^5.7.0",

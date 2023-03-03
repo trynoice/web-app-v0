@@ -1,3 +1,5 @@
+import { CdnClient } from "@trynoice/january";
+
 export const CDN_ENDPOINT =
   process.env.NODE_ENV === "production"
     ? "https://cdn.trynoice.com"
@@ -126,4 +128,10 @@ export async function getLibraryManifest(): Promise<LibraryManifest> {
   const response = await fetch(`${CDN_ENDPOINT}/library/library-manifest.json`);
 
   return await response.json();
+}
+
+export class JanuaryCdnClient implements CdnClient {
+  getResource(path: string): Promise<Response> {
+    return fetch(`${CDN_ENDPOINT}/${path}`);
+  }
 }
