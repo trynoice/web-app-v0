@@ -5,6 +5,7 @@ import {
   Badge,
   CloseButton,
   Collapse,
+  Divider,
   Flex,
   Heading,
   HStack,
@@ -27,6 +28,7 @@ import {
   SliderThumb,
   SliderTrack,
   Spacer,
+  Stack,
   Text,
   Tooltip,
   useColorMode,
@@ -159,6 +161,7 @@ export default function Home(
       <SoundPlayerManagerProvider cdnClient={cdnClient} logger={logger}>
         <SoundDashboard groupedSounds={groupedSounds} />
       </SoundPlayerManagerProvider>
+      <Footer />
     </VStack>
   );
 }
@@ -695,5 +698,52 @@ function VolumeSlider(props: VolumeSliderProps) {
         )}
       </SliderThumb>
     </Slider>
+  );
+}
+
+function Footer(): ReactElement {
+  const year = new Date().getFullYear();
+  const fg = useColorModeValue("blackAlpha.600", "whiteAlpha.700");
+
+  return (
+    <VStack w={"full"} spacing={6} pt={12} pb={2} fontSize={"sm"} color={fg}>
+      <Divider color={fg} />
+      <Stack
+        as={"footer"}
+        w={"full"}
+        maxW={"maxContentWidth"}
+        direction={{ base: "column", md: "row" }}
+        align={"center"}
+        spacing={{ base: 4, md: 20 }}
+      >
+        <Text w={"full"} textAlign={{ base: "center", md: "left" }}>
+          &copy; {year}, all rights reserved.
+          <Text as="span" fontWeight={"medium"}>
+            {" "}
+            Made with &hearts; in India.
+          </Text>
+          <br />
+        </Text>
+        <Text
+          w={"full"}
+          textAlign={{ base: "center", md: "right" }}
+          fontSize={"xs"}
+        >
+          <ChakraLink as={"a"} href={"https://trynoice.com"} isExternal>
+            Home
+          </ChakraLink>
+          <Text as={"span"} mx={2}>
+            |
+          </Text>
+          <ChakraLink
+            as={"a"}
+            href={"https://thenounproject.com/icon/white-noise-1287855/"}
+            isExternal
+          >
+            Logo by Juraj Sedlák
+          </ChakraLink>
+        </Text>
+      </Stack>
+    </VStack>
   );
 }
