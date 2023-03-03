@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertDescription,
+  AlertIcon,
   Badge,
   CloseButton,
   Collapse,
@@ -33,6 +34,7 @@ import {
   useDisclosure,
   VStack,
 } from "@chakra-ui/react";
+import useLocalStorage from "@rehooks/local-storage";
 import {
   ConsoleLogger,
   ConsoleLogLevel,
@@ -421,13 +423,25 @@ interface FadeDurationControlModalProps {
 function FadeDurationControlModal(
   props: FadeDurationControlModalProps
 ): ReactElement {
-  const { fadeInSeconds, setFadeInSeconds, fadeOutSeconds, setFadeOutSeconds } =
-    useSoundPlayerManagerFadeConfig();
+  const [fadeInSecondsLocal, setFadeInSecondsLocal] = useLocalStorage<number>(
+    "fade-in-seconds",
+    2
+  );
+
+  const [fadeOutSecondsLocal, setFadeOutSecondsLocal] = useLocalStorage<number>(
+    "fade-out-seconds",
+    2
+  );
+
+  const {
+    setFadeInSeconds: setFadeInSecondsUpstream,
+    setFadeOutSeconds: setFadeOutSecondsUpstream,
+  } = useSoundPlayerManagerFadeConfig();
 
   useEffect(() => {
-    setFadeInSeconds(2);
-    setFadeOutSeconds(2);
-  }, []);
+    setFadeInSecondsUpstream(fadeInSecondsLocal);
+    setFadeOutSecondsUpstream(fadeOutSecondsLocal);
+  }, [fadeInSecondsLocal, fadeOutSecondsLocal]);
 
   return (
     <Modal
@@ -446,14 +460,18 @@ function FadeDurationControlModal(
         <ModalBody my={6} as={VStack} spacing={8}>
           <FadeDurationSlider
             title={"Fade-in Duration"}
-            value={fadeInSeconds}
-            onChange={setFadeInSeconds}
+            value={fadeInSecondsLocal}
+            onChange={setFadeInSecondsLocal}
           />
           <FadeDurationSlider
             title={"Fade-out Duration"}
-            value={fadeOutSeconds}
-            onChange={setFadeOutSeconds}
+            value={fadeOutSecondsLocal}
+            onChange={setFadeOutSecondsLocal}
           />
+          <Alert status={"info"} fontSize={"sm"}>
+            <AlertIcon />
+            We'll save these settings in this browser!
+          </Alert>
         </ModalBody>
       </ModalContent>
     </Modal>
