@@ -3,6 +3,7 @@ import {
   AlertDescription,
   CloseButton,
   Collapse,
+  Flex,
   Heading,
   HStack,
   Icon,
@@ -171,14 +172,22 @@ function NavBar(props: NavBarProps): ReactElement {
         <AppIcon w={{ base: 28, md: 32 }} h={"auto"} fill={"currentColor"} />
       </ChakraLink>
       <Spacer minW={4} />
-      <IconButton
-        icon={<Icon as={colorMode === "light" ? TbMoon : TbSun} boxSize={5} />}
-        aria-label={"toggle color mode"}
-        onClick={toggleColorMode}
-        isRound={true}
-        variant={"ghost"}
-        colorScheme={"primary"}
-      />
+      <Tooltip
+        label={`Toggle ${colorMode === "light" ? "Dark" : "Light"} mode`}
+        closeDelay={500}
+        hasArrow={true}
+      >
+        <IconButton
+          icon={
+            <Icon as={colorMode === "light" ? TbMoon : TbSun} boxSize={5} />
+          }
+          aria-label={"toggle color mode"}
+          onClick={toggleColorMode}
+          isRound={true}
+          variant={"ghost"}
+          colorScheme={"primary"}
+        />
+      </Tooltip>
     </HStack>
   );
 }
@@ -303,31 +312,45 @@ function GlobalSoundControls(): ReactElement {
   return (
     <HStack
       h={10}
-      pl={{ base: 3, md: 6 }}
-      pr={{ base: 9, md: 12 }}
+      pl={5}
+      pr={12}
       spacing={4}
       bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
       rounded={"full"}
     >
-      <Tooltip label={playButtonLabel}>
+      <Tooltip
+        label={playButtonLabel}
+        closeDelay={500}
+        hasArrow={true}
+        isDisabled={isIdle}
+      >
         <IconButton
           icon={
-            <Icon as={isPlaying ? TbPlayerPause : TbPlayerPlay} boxSize={5} />
+            <Icon
+              as={isPlaying ? TbPlayerPause : TbPlayerPlay}
+              boxSize={5}
+              color={useColorModeValue("primary.500", "primary.200")}
+            />
           }
           aria-label={playButtonLabel}
           isDisabled={isIdle}
           onClick={togglePlayback}
           variant={"ghost"}
-          colorScheme={"primary"}
-          rounded={"full"}
+          colorScheme={useColorModeValue("blackAlpha", "gray")}
+          rounded={"none"}
         />
       </Tooltip>
-      <VolumeSlider
-        label={"Master Volume"}
-        value={volume}
-        onChange={setVolume}
-        isDisabled={isIdle}
-      />
+      <Tooltip label={"Master Volume"} closeDelay={500} hasArrow={true}>
+        {/* Need to wrap in a flex because tooltip is not working with slider.
+            Yes, tried the forward ref for the custom component as well. */}
+        <Flex w={"full"}>
+          <VolumeSlider
+            label={"Master Volume"}
+            value={volume}
+            onChange={setVolume}
+          />
+        </Flex>
+      </Tooltip>
     </HStack>
   );
 }
@@ -477,7 +500,6 @@ interface VolumeSliderProps {
   readonly label: string;
   readonly value: number;
   readonly onChange: (volume: number) => void;
-  readonly isDisabled?: boolean;
 }
 
 function VolumeSlider(props: VolumeSliderProps) {
@@ -486,7 +508,6 @@ function VolumeSlider(props: VolumeSliderProps) {
   return (
     <Slider
       aria-label={props.label}
-      isDisabled={props.isDisabled}
       colorScheme={"primary"}
       min={0}
       max={1}
