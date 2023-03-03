@@ -1,0 +1,34 @@
+name: Node.js
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch: {}
+
+jobs:
+  dependency-upgrades:
+    name: Dependency Upgrades
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: ".node-version"
+          cache: npm
+      - run: npx npm-check-updates -u
+      - run: rm -rf node_modules package-lock.json
+      - run: npm install
+      - uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.BOT_PAT }}
+          add-paths: |
+            package.json
+            package-lock.json
+          commit-message: Bump npm dependencies
+          author: Noice Bot <107856616+noice-bot@users.noreply.github.com>
+          committer: Noice Bot <107856616+noice-bot@users.noreply.github.com>
+          delete-branch: true
+          branch: dependency-upgrades
+          branch-suffix: timestamp
+          title: Bump npm dependencies
+          body: ""
+          labels: dependencies
