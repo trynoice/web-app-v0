@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertDescription,
+  Badge,
   CloseButton,
   Collapse,
   Flex,
@@ -14,6 +15,11 @@ import {
   InputLeftElement,
   InputRightElement,
   Link as ChakraLink,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalOverlay,
   SimpleGrid,
   Slider,
   SliderFilledTrack,
@@ -37,9 +43,19 @@ import {
   SoundPlayerManagerProvider,
   useSoundPlayer,
   useSoundPlayerManager,
+  useSoundPlayerManagerFadeConfig,
 } from "@trynoice/january/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
-import { Fragment, ReactElement, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  ReactElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { IconType } from "react-icons";
+import { BsSoundwave } from "react-icons/bs";
 import {
   TbListSearch,
   TbMoon,
@@ -304,46 +320,57 @@ function filterGroupedSounds(
 }
 
 function GlobalSoundControls(): ReactElement {
-  const { state, volume, setVolume, togglePlayback } = useSoundPlayerManager();
+  const {
+    isOpen: isFadeDurationControlsOpen,
+    onOpen: onOpenFadeDurationControls,
+    onClose: onCloseFadeDurationControls,
+  } = useDisclosure();
+
+  const { state, volume, setVolume, resume, pause, stop } =
+    useSoundPlayerManager();
+
   const isIdle = state === SoundPlayerManagerState.Idle;
   const isPlaying = state === SoundPlayerManagerState.Playing;
-  const playButtonLabel = `${isPlaying ? "Pause" : "Resume"} all sounds`;
 
   return (
     <HStack
       h={10}
-      pl={5}
-      pr={12}
-      spacing={4}
+      px={4}
+      spacing={1}
+      justifyContent={"center"}
       bg={useColorModeValue("blackAlpha.100", "whiteAlpha.200")}
       rounded={"full"}
     >
-      <Tooltip
-        label={playButtonLabel}
-        closeDelay={500}
-        hasArrow={true}
+      <GlobalSoundControlButton
+        label={"Fade duration"}
+        icon={BsSoundwave}
+        onClick={onOpenFadeDurationControls}
+      />
+
+      <FadeDurationControlModal
+        isOpen={isFadeDurationControlsOpen}
+        onClose={onCloseFadeDurationControls}
+      />
+
+      <GlobalSoundControlButton
+        label={`${isPlaying ? "Pause" : "Resume"} all sounds`}
+        icon={isPlaying ? TbPlayerPause : TbPlayerPlay}
+        onClick={isPlaying ? pause : resume}
         isDisabled={isIdle}
-      >
-        <IconButton
-          icon={
-            <Icon
-              as={isPlaying ? TbPlayerPause : TbPlayerPlay}
-              boxSize={5}
-              color={useColorModeValue("primary.500", "primary.200")}
-            />
-          }
-          aria-label={playButtonLabel}
-          isDisabled={isIdle}
-          onClick={togglePlayback}
-          variant={"ghost"}
-          colorScheme={useColorModeValue("blackAlpha", "gray")}
-          rounded={"none"}
-        />
-      </Tooltip>
+      />
+
+      <GlobalSoundControlButton
+        label={"Stop all sounds"}
+        icon={TbPlayerStop}
+        onClick={stop}
+        isDisabled={isIdle}
+      />
+
       <Tooltip label={"Master Volume"} closeDelay={500} hasArrow={true}>
         {/* Need to wrap in a flex because tooltip is not working with slider.
-            Yes, tried the forward ref for the custom component as well. */}
-        <Flex w={"full"}>
+            Yes, tried the forward ref for the custom component as well.
+            Horizontal padding is for offsetting the slider thumb overlap. */}
+        <Flex w={"full"} px={3}>
           <VolumeSlider
             label={"Master Volume"}
             value={volume}
@@ -352,6 +379,122 @@ function GlobalSoundControls(): ReactElement {
         </Flex>
       </Tooltip>
     </HStack>
+  );
+}
+
+interface GlobalSoundControlButtonProps {
+  readonly label: string;
+  readonly icon: IconType;
+  readonly onClick: () => void;
+  readonly isDisabled?: boolean;
+}
+
+function GlobalSoundControlButton(
+  props: GlobalSoundControlButtonProps
+): ReactElement {
+  return (
+    <Tooltip label={props.label} closeDelay={500} hasArrow={true}>
+      <IconButton
+        icon={
+          <Icon
+            as={props.icon}
+            boxSize={5}
+            color={useColorModeValue("primary.500", "primary.200")}
+          />
+        }
+        aria-label={props.label}
+        isDisabled={props.isDisabled}
+        onClick={props.onClick}
+        variant={"ghost"}
+        colorScheme={useColorModeValue("blackAlpha", "gray")}
+        rounded={"none"}
+      />
+    </Tooltip>
+  );
+}
+
+interface FadeDurationControlModalProps {
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+}
+
+function FadeDurationControlModal(
+  props: FadeDurationControlModalProps
+): ReactElement {
+  const { fadeInSeconds, setFadeInSeconds, fadeOutSeconds, setFadeOutSeconds } =
+    useSoundPlayerManagerFadeConfig();
+
+  useEffect(() => {
+    setFadeInSeconds(2);
+    setFadeOutSeconds(2);
+  }, []);
+
+  return (
+    <Modal
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      isCentered={true}
+      size={{ base: "xs", sm: "sm", md: "md" }}
+    >
+      <ModalOverlay
+        bg={useColorModeValue("blackAlpha.400", "whiteAlpha.300")}
+        backdropFilter={"auto"}
+        backdropBlur={"md"}
+      />
+      <ModalContent bg={useColorModeValue("white", "black")}>
+        <ModalCloseButton rounded={"full"} />
+        <ModalBody my={6} as={VStack} spacing={8}>
+          <FadeDurationSlider
+            title={"Fade-in Duration"}
+            value={fadeInSeconds}
+            onChange={setFadeInSeconds}
+          />
+          <FadeDurationSlider
+            title={"Fade-out Duration"}
+            value={fadeOutSeconds}
+            onChange={setFadeOutSeconds}
+          />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+}
+
+interface FadeDurationSliderProps {
+  readonly title: string;
+  readonly value: number;
+  readonly onChange: (duration: number) => void;
+}
+
+function FadeDurationSlider(props: FadeDurationSliderProps): ReactElement {
+  return (
+    <VStack w={"full"} align={"flex-start"} spacing={4}>
+      <Heading as={"h1"} size={"md"}>
+        {props.title}
+        <Badge
+          ml={4}
+          colorScheme={"primary"}
+          fontSize={"md"}
+          textTransform={"none"}
+        >
+          {props.value}s
+        </Badge>
+      </Heading>
+      <Slider
+        aria-label={`${props.title} slider`}
+        value={props.value}
+        onChange={props.onChange}
+        min={0}
+        max={30}
+        step={1}
+        colorScheme={"primary"}
+      >
+        <SliderTrack>
+          <SliderFilledTrack />
+        </SliderTrack>
+        <SliderThumb />
+      </Slider>
+    </VStack>
   );
 }
 
@@ -442,7 +585,7 @@ interface SoundProps {
 }
 
 function Sound(props: SoundProps): ReactElement {
-  const { state, volume, setVolume, togglePlayback } = useSoundPlayer(
+  const { state, volume, setVolume, play, stop } = useSoundPlayer(
     props.sound.id
   );
 
@@ -480,7 +623,7 @@ function Sound(props: SoundProps): ReactElement {
           }
           aria-label={`play ${props.sound.name}`}
           isLoading={isBuffering}
-          onClick={togglePlayback}
+          onClick={isStopped ? play : stop}
           size={"sm"}
           colorScheme={"primary"}
           variant={"outline"}
