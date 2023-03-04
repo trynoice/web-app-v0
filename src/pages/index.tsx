@@ -77,6 +77,7 @@ import {
 import { JanuaryCdnClient } from "../api/cdn";
 import AppIcon from "../assets/app-icon";
 import SocialCardImage from "../assets/social-card-image.png";
+import Analytics from "../components/analytics";
 
 export const pageQuery = graphql`
   query Home {
@@ -153,16 +154,18 @@ export default function Home(
     <VStack
       w={"full"}
       minH={"100vh"}
-      p={{ base: 4, md: 6 }}
-      spacing={16}
+      spacing={0}
       bg={useColorModeValue("white", "black")}
     >
-      <NavBar title={props.data.site!.siteMetadata.title} />
-      <PrototypeWarning />
-      <SoundPlayerManagerProvider cdnClient={cdnClient} logger={logger}>
-        <SoundDashboard groupedSounds={groupedSounds} />
-      </SoundPlayerManagerProvider>
-      <Footer />
+      <Analytics />
+      <VStack as={"main"} w={"full"} p={{ base: 4, md: 6 }} spacing={16}>
+        <NavBar title={props.data.site!.siteMetadata.title} />
+        <PrototypeWarning />
+        <SoundPlayerManagerProvider cdnClient={cdnClient} logger={logger}>
+          <SoundDashboard groupedSounds={groupedSounds} />
+        </SoundPlayerManagerProvider>
+        <Footer />
+      </VStack>
     </VStack>
   );
 }
@@ -179,6 +182,7 @@ function NavBar(props: NavBarProps): ReactElement {
 
   return (
     <HStack
+      as={"header"}
       w={"full"}
       maxW={"maxContentWidth"}
       px={{ base: 6, md: 8 }}
