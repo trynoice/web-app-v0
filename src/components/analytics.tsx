@@ -9,7 +9,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import useLocalStorage from "@rehooks/local-storage";
-import { ReactElement, useEffect } from "react";
+import { ReactElement, useEffect, useState } from "react";
 
 enum AnalyticsConsentStatus {
   granted = "granted",
@@ -17,10 +17,13 @@ enum AnalyticsConsentStatus {
 }
 
 export default function Analytics(): ReactElement {
+  const [isConsentVisible, setConsentVisible] = useState(false);
   const [consentStatus, setConsentStatus] =
     useLocalStorage<AnalyticsConsentStatus | null>("analytics-consent", null);
 
   useEffect(() => {
+    setConsentVisible(consentStatus == null);
+
     const scriptElementId = "gtag.js";
     if (
       consentStatus === AnalyticsConsentStatus.granted &&
@@ -37,11 +40,11 @@ export default function Analytics(): ReactElement {
       script.async = true;
       document.body.appendChild(script);
     }
-  });
+  }, [consentStatus]);
 
   return (
     <AnalyticsConsent
-      isOpen={consentStatus == null}
+      isOpen={isConsentVisible}
       onDenied={() => setConsentStatus(AnalyticsConsentStatus.denied)}
       onGranted={() => setConsentStatus(AnalyticsConsentStatus.granted)}
     />
