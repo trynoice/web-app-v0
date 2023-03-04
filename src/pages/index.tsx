@@ -21,6 +21,7 @@ import {
   ModalBody,
   ModalCloseButton,
   ModalContent,
+  ModalHeader,
   ModalOverlay,
   SimpleGrid,
   Slider,
@@ -60,13 +61,13 @@ import {
 } from "react";
 import { IconType } from "react-icons";
 import {
-  TbCellSignal1,
   TbListSearch,
   TbMoon,
   TbPlayerPause,
   TbPlayerPlay,
   TbPlayerStop,
   TbSearch,
+  TbSettings,
   TbSun,
   TbVolume,
   TbVolume2,
@@ -329,9 +330,9 @@ function filterGroupedSounds(
 
 function GlobalSoundControls(): ReactElement {
   const {
-    isOpen: isFadeDurationControlsOpen,
-    onOpen: onOpenFadeDurationControls,
-    onClose: onCloseFadeDurationControls,
+    isOpen: isSettingsModalOpen,
+    onOpen: onOpenSettingsModal,
+    onClose: onCloseSettingsModal,
   } = useDisclosure();
 
   const { state, volume, setVolume, resume, pause, stop } =
@@ -350,14 +351,14 @@ function GlobalSoundControls(): ReactElement {
       rounded={"full"}
     >
       <GlobalSoundControlButton
-        label={"Fade Duration"}
-        icon={TbCellSignal1}
-        onClick={onOpenFadeDurationControls}
+        label={"Settings"}
+        icon={TbSettings}
+        onClick={onOpenSettingsModal}
       />
 
-      <FadeDurationControlModal
-        isOpen={isFadeDurationControlsOpen}
-        onClose={onCloseFadeDurationControls}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={onCloseSettingsModal}
       />
 
       <GlobalSoundControlButton
@@ -421,14 +422,12 @@ function GlobalSoundControlButton(
   );
 }
 
-interface FadeDurationControlModalProps {
+interface SettingsModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
 }
 
-function FadeDurationControlModal(
-  props: FadeDurationControlModalProps
-): ReactElement {
+function SettingsModal(props: SettingsModalProps): ReactElement {
   const [fadeInSecondsLocal, setFadeInSecondsLocal] = useLocalStorage<number>(
     "fade-in-seconds",
     2
@@ -462,8 +461,9 @@ function FadeDurationControlModal(
         backdropBlur={"md"}
       />
       <ModalContent bg={useColorModeValue("white", "black")}>
+        <ModalHeader fontWeight={"medium"}>Settings</ModalHeader>
         <ModalCloseButton rounded={"full"} />
-        <ModalBody my={6} as={VStack} spacing={8}>
+        <ModalBody mb={4} as={VStack} spacing={8}>
           <FadeDurationSlider
             title={"Fade-in Duration"}
             value={fadeInSecondsLocal}
@@ -493,7 +493,7 @@ interface FadeDurationSliderProps {
 function FadeDurationSlider(props: FadeDurationSliderProps): ReactElement {
   return (
     <VStack w={"full"} align={"flex-start"} spacing={4}>
-      <Heading as={"h1"} size={"md"}>
+      <Heading as={"h1"} fontSize={"lg"}>
         {props.title}
         <Badge
           ml={4}
@@ -729,14 +729,18 @@ function Footer(): ReactElement {
           textAlign={{ base: "center", md: "right" }}
           fontSize={"xs"}
         >
-          <ChakraLink as={"a"} href={"https://trynoice.com"} isExternal>
+          <ChakraLink href={"https://trynoice.com"} isExternal>
             Home
           </ChakraLink>
-          <Text as={"span"} mx={2}>
-            |
-          </Text>
+          <InlineDivider />
           <ChakraLink
-            as={"a"}
+            href={"https://github.com/trynoice/web-app-v0"}
+            isExternal
+          >
+            GitHub
+          </ChakraLink>
+          <InlineDivider />
+          <ChakraLink
             href={"https://thenounproject.com/icon/white-noise-1287855/"}
             isExternal
           >
@@ -745,5 +749,13 @@ function Footer(): ReactElement {
         </Text>
       </Stack>
     </VStack>
+  );
+}
+
+function InlineDivider(): ReactElement {
+  return (
+    <Text as={"span"} mx={2}>
+      |
+    </Text>
   );
 }
