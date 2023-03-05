@@ -3,6 +3,7 @@ import {
   AlertDescription,
   AlertIcon,
   Badge,
+  Button,
   CloseButton,
   Collapse,
   Divider,
@@ -17,12 +18,16 @@ import {
   InputLeftElement,
   InputRightElement,
   Link as ChakraLink,
+  LinkProps as ChakraLinkProps,
+  ListItem,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
+  OrderedList,
   SimpleGrid,
   Slider,
   SliderFilledTrack,
@@ -61,11 +66,14 @@ import {
 } from "react";
 import { IconType } from "react-icons";
 import {
+  TbArrowsShuffle,
+  TbInfoCircle,
   TbListSearch,
   TbMoon,
   TbPlayerPause,
   TbPlayerPlay,
   TbPlayerStop,
+  TbRepeat,
   TbSearch,
   TbSettings,
   TbSun,
@@ -96,6 +104,17 @@ export const pageQuery = graphql`
         name
         group
         tags
+        maxSilence
+        sources {
+          author {
+            name
+            url
+          }
+
+          license
+          name
+          url
+        }
       }
     }
   }
@@ -621,8 +640,15 @@ function Sound(props: SoundProps): ReactElement {
   const isStopped =
     state === SoundPlayerState.Stopping || state === SoundPlayerState.Stopped;
 
+  const {
+    isOpen: isSoundInfoModalOpen,
+    onOpen: onOpenSoundInfoModal,
+    onClose: onCloseSoundInfoModal,
+  } = useDisclosure();
+
   return (
     <VStack
+      position={"relative"}
       w={"full"}
       maxW={64}
       p={6}
@@ -663,6 +689,29 @@ function Sound(props: SoundProps): ReactElement {
           onChange={setVolume}
         />
       </HStack>
+      <IconButton
+        icon={
+          <Icon
+            as={TbInfoCircle}
+            boxSize={5}
+            color={useColorModeValue("blackAlpha.500", "whiteAlpha.600")}
+          />
+        }
+        aria-label={"view sound info"}
+        onClick={onOpenSoundInfoModal}
+        position={"absolute"}
+        top={-1} // Offset the top margin applied by the Stack spacing!
+        right={3}
+        size={"sm"}
+        variant={"ghost"}
+        colorScheme={useColorModeValue("blackAlpha", "gray")}
+        rounded={"full"}
+      />
+      <SoundInfoModal
+        sound={props.sound}
+        isOpen={isSoundInfoModalOpen}
+        onClose={onCloseSoundInfoModal}
+      />
     </VStack>
   );
 }
@@ -703,6 +752,103 @@ function VolumeSlider(props: VolumeSliderProps) {
       </SliderThumb>
     </Slider>
   );
+}
+
+interface SoundInfoModalProps {
+  readonly sound: Queries.Sound;
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+}
+
+function SoundInfoModal(props: SoundInfoModalProps): ReactElement {
+  const isLooping = props.sound.maxSilence === 0;
+  const primaryColor = useColorModeValue("primary.500", "primary.200");
+
+  return (
+    <Fragment>
+      <Modal
+        isOpen={props.isOpen}
+        onClose={props.onClose}
+        isCentered={true}
+        size={{ base: "xs", sm: "md", md: "lg" }}
+      >
+        <ModalOverlay
+          bg={useColorModeValue("blackAlpha.400", "whiteAlpha.300")}
+          backdropFilter={"auto"}
+          backdropBlur={"md"}
+        />
+        <ModalContent bg={useColorModeValue("white", "black")}>
+          <ModalHeader fontWeight={"medium"}>{props.sound.name}</ModalHeader>
+          <ModalCloseButton rounded={"full"} />
+          <ModalBody as={VStack} align={"flex-start"} spacing={8}>
+            <HStack spacing={4}>
+              <Icon
+                as={isLooping ? TbRepeat : TbArrowsShuffle}
+                boxSize={6}
+                color={primaryColor}
+              />
+              <Text>
+                {isLooping
+                  ? "This sound plays seamlessly."
+                  : `This sound repeats once every ${formatSeconds(
+                      props.sound.maxSilence
+                    )}.`}
+              </Text>
+            </HStack>
+            <VStack align={"flex-start"} spacing={4}>
+              <Heading as={"h3"} size={"md"}>
+                Media Sources
+              </Heading>
+              <OrderedList px={4} spacing={2}>
+                {props.sound.sources.map((source) => (
+                  <ListItem key={source.url}>
+                    <ChakraLink
+                      href={source.url}
+                      isExternal={true}
+                      color={primaryColor}
+                    >
+                      {source.name}
+                    </ChakraLink>{" "}
+                    by{" "}
+                    <ChakraLink
+                      href={source.author?.url}
+                      isExternal={true}
+                      color={primaryColor}
+                    >
+                      {source.author?.name}
+                    </ChakraLink>
+                    <br />
+                    License:{" "}
+                    <SpdxLicenseTitle
+                      id={source.license}
+                      isExternal={true}
+                      color={primaryColor}
+                    />
+                  </ListItem>
+                ))}
+              </OrderedList>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme={"primary"} onClick={props.onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Fragment>
+  );
+}
+
+function formatSeconds(duration: number): string {
+  const hours = Math.floor(duration / 3600);
+  const mins = Math.floor((duration % 3600) / 60);
+  const secs = duration % 60;
+
+  const hourStr = hours > 0 ? `${hours} hour${hours > 1 ? "s" : ""}` : "";
+  const minuteStr = mins > 0 ? `${mins} minute${mins > 1 ? "s" : ""}` : "";
+  const secondStr = secs > 0 ? `${secs} second${secs > 1 ? "s" : ""}` : "";
+  return `${hourStr} ${minuteStr} ${secondStr}`.trim().replace(/\s+/g, " ");
 }
 
 function Footer(): ReactElement {
@@ -761,5 +907,37 @@ function InlineDivider(): ReactElement {
     <Text as={"span"} mx={2}>
       |
     </Text>
+  );
+}
+
+const SPDX_LICENSE_MAP: { [key: string]: { name: string; url: string } } = {
+  "CC-BY-3.0": {
+    name: "Creative Commons Attribution 3.0 Unported",
+    url: "https://spdx.org/licenses/CC-BY-3.0.html",
+  },
+  "CC-BY-4.0": {
+    name: "Creative Commons Attribution 4.0 International",
+    url: "https://spdx.org/licenses/CC-BY-4.0.html",
+  },
+  "GPL-3.0-only": {
+    name: "GNU General Public License v3.0 only",
+    url: "https://spdx.org/licenses/GPL-3.0-only.html",
+  },
+};
+
+interface SpdxLicenseTitleProps extends ChakraLinkProps {
+  readonly id: string;
+}
+
+function SpdxLicenseTitle(props: SpdxLicenseTitleProps): ReactElement {
+  const license = SPDX_LICENSE_MAP[props.id];
+  if (license == null) {
+    throw new Error(`SPDX_LICENSE_MAP does not contain key '${props.id}'`);
+  }
+
+  return (
+    <ChakraLink {...props} href={license.url}>
+      {license.name}
+    </ChakraLink>
   );
 }
