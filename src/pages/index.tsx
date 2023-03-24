@@ -53,7 +53,7 @@ import {
   SoundPlayerManagerProvider,
   useSoundPlayer,
   useSoundPlayerManager,
-  useSoundPlayerManagerFadeConfig,
+  useSoundPlayerManagerConfig,
 } from "@trynoice/january/react";
 import { graphql, Link as GatsbyLink, PageProps } from "gatsby";
 import {
@@ -398,13 +398,13 @@ function GlobalSoundControls(): ReactElement {
         isDisabled={isIdle}
       />
 
-      <Tooltip label={"Master Volume"} closeDelay={500} hasArrow={true}>
+      <Tooltip label={"Main Volume"} closeDelay={500} hasArrow={true}>
         {/* Need to wrap in a flex because tooltip is not working with slider.
             Yes, tried the forward ref for the custom component as well.
             Horizontal padding is for offsetting the slider thumb overlap. */}
         <Flex w={"full"} px={3}>
           <VolumeSlider
-            label={"Master Volume"}
+            label={"Main Volume"}
             value={volume}
             onChange={setVolume}
           />
@@ -464,12 +464,17 @@ function SettingsModal(props: SettingsModalProps): ReactElement {
   const {
     setFadeInSeconds: setFadeInSecondsUpstream,
     setFadeOutSeconds: setFadeOutSecondsUpstream,
-  } = useSoundPlayerManagerFadeConfig();
+  } = useSoundPlayerManagerConfig();
 
-  useEffect(() => {
-    setFadeInSecondsUpstream(fadeInSecondsLocal);
-    setFadeOutSecondsUpstream(fadeOutSecondsLocal);
-  }, [fadeInSecondsLocal, fadeOutSecondsLocal]);
+  useEffect(
+    () => setFadeInSecondsUpstream(fadeInSecondsLocal),
+    [fadeInSecondsLocal]
+  );
+
+  useEffect(
+    () => setFadeOutSecondsUpstream(fadeOutSecondsLocal),
+    [fadeOutSecondsLocal]
+  );
 
   return (
     <Modal
@@ -723,7 +728,7 @@ interface VolumeSliderProps {
 }
 
 function VolumeSlider(props: VolumeSliderProps) {
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(props.value);
 
   return (
     <Slider
@@ -732,7 +737,7 @@ function VolumeSlider(props: VolumeSliderProps) {
       min={0}
       max={1}
       step={0.01}
-      value={props.value}
+      value={value}
       onChange={(value) => {
         props.onChange(value);
         setValue(value);
