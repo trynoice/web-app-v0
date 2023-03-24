@@ -287,6 +287,7 @@ function SoundDashboard(props: SoundDashboardProps): ReactElement {
     () => filterGroupedSounds(props.groupedSounds, searchQuery),
     [searchQuery]
   );
+  const emptyResultsForeground = useColorModeValue("gray.400", "gray.500");
 
   return (
     <Fragment>
@@ -308,7 +309,7 @@ function SoundDashboard(props: SoundDashboardProps): ReactElement {
           w={"full"}
           maxW={"lg"}
           spacing={4}
-          color={useColorModeValue("gray.400", "gray.500")}
+          color={emptyResultsForeground}
           textAlign={"center"}
         >
           <Icon as={TbListSearch} boxSize={12} />
