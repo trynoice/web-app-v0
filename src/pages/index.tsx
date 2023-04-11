@@ -255,7 +255,17 @@ function PrototypeWarning(): ReactElement {
           This is an early prototype of a web application for Noice. It
           showcases our free sound library with fundamental playback features,
           allowing us to evaluate our web-based sound engine. If you encounter
-          unexpected behaviour, please inform us about it at{" "}
+          unexpected behaviour, please report it{" "}
+          <ChakraLink
+            href={
+              "https://docs.google.com/forms/d/e/1FAIpQLSdYhyYjxhJ7IKyiqdc3AE3uINSoRWBw8ROB003gkZ47KeSjWw/viewform"
+            }
+            color={"primary.400"}
+            isExternal={true}
+          >
+            here
+          </ChakraLink>{" "}
+          or inform us about it at{" "}
           <ChakraLink
             href={"mailto:trynoiceapp@gmail.com"}
             color={"primary.400"}
