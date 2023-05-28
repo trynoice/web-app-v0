@@ -25,11 +25,11 @@
     "@chakra-ui/react": "^2.6.1",
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
-    "@fontsource/poppins": "^4.5.10",
-    "@fontsource/urbanist": "^4.5.17",
+    "@fontsource/poppins": "^5.0.1",
+    "@fontsource/urbanist": "^5.0.1",
     "@rehooks/local-storage": "^2.4.4",
     "@trynoice/january": "github:trynoice/january#main",
-    "framer-motion": "^10.12.12",
+    "framer-motion": "^10.12.16",
     "gatsby": "^5.10.0",
     "gatsby-plugin-manifest": "^5.10.0",
     "react": "^18.2.0",
@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "@types/gtag.js": "^0.0.12",
-    "@types/node": "^20.2.1",
-    "@types/react": "^18.2.6",
+    "@types/node": "^20.2.5",
+    "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
     "typescript": "^5.0.4"
   }
