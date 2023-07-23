@@ -716,8 +716,8 @@ function Sound(props: SoundProps): ReactElement {
         aria-label={"view sound info"}
         onClick={onOpenSoundInfoModal}
         position={"absolute"}
-        top={-1} // Offset the top margin applied by the Stack spacing!
-        right={3}
+        top={1}
+        right={1}
         size={"sm"}
         variant={"ghost"}
         colorScheme={useColorModeValue("blackAlpha", "gray")}
