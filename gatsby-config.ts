@@ -2,7 +2,9 @@ import type { GatsbyConfig } from "gatsby";
 
 const config: GatsbyConfig = {
   jsxRuntime: "automatic",
-  graphqlTypegen: true,
+  graphqlTypegen: {
+    generateOnBuild: true, // for running 'typecheck' script on GitHub actions.
+  },
   trailingSlash: "never",
   siteMetadata: {
     title: "Noice: Natural calming noise",
