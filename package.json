@@ -37,9 +37,9 @@
     "react-icons": "^4.11.0"
   },
   "devDependencies": {
-    "@types/gtag.js": "^0.0.13",
-    "@types/node": "^20.6.2",
-    "@types/react": "^18.2.21",
+    "@types/gtag.js": "^0.0.14",
+    "@types/node": "^20.6.4",
+    "@types/react": "^18.2.22",
     "@types/react-dom": "^18.2.7",
     "typescript": "^5.2.2"
   }
