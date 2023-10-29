@@ -30,16 +30,16 @@
     "@rehooks/local-storage": "^2.4.5",
     "@trynoice/january": "github:trynoice/january#main",
     "framer-motion": "^10.16.4",
-    "gatsby": "^5.12.8",
-    "gatsby-plugin-manifest": "^5.12.2",
+    "gatsby": "^5.12.9",
+    "gatsby-plugin-manifest": "^5.12.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.11.0"
   },
   "devDependencies": {
     "@types/gtag.js": "^0.0.17",
-    "@types/node": "^20.8.7",
-    "@types/react": "^18.2.31",
+    "@types/node": "^20.8.9",
+    "@types/react": "^18.2.33",
     "@types/react-dom": "^18.2.14",
     "typescript": "^5.2.2"
   }
