@@ -5,31 +5,10 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  dependency-upgrades:
-    name: Dependency Upgrades
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: ".node-version"
-          cache: npm
-      - run: npx npm-check-updates -u
-      - run: rm -rf node_modules package-lock.json
-      - run: npm install
-      - run: npm run build && npm run typecheck
-      - uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.BOT_PAT }}
-          add-paths: |
-            package.json
-            package-lock.json
-          commit-message: Bump npm dependencies
-          author: Noice Bot <107856616+noice-bot@users.noreply.github.com>
-          committer: Noice Bot <107856616+noice-bot@users.noreply.github.com>
-          delete-branch: true
-          branch: dependency-upgrades
-          branch-suffix: timestamp
-          title: Bump npm dependencies
-          body: ""
-          labels: dependencies
+  bump-deps:
+    name: Bump Dependencies
+    uses: trynoice/.github/.github/workflows/bump-npm-deps.yaml@main
+    with:
+      build-command: sh -c 'npm run build && npm run typecheck'
+    secrets:
+      noice-bot-github-token: ${{ secrets.BOT_PAT }}
