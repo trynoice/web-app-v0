@@ -29,7 +29,7 @@
     "@fontsource/urbanist": "^5.0.20",
     "@rehooks/local-storage": "^2.4.5",
     "@trynoice/january": "github:trynoice/january#main",
-    "framer-motion": "^11.3.21",
+    "framer-motion": "^11.3.24",
     "gatsby": "^5.13.7",
     "gatsby-plugin-manifest": "^5.13.1",
     "react": "^18.3.1",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/gtag.js": "^0.0.20",
-    "@types/node": "^22.1.0",
+    "@types/node": "^22.2.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "typescript": "^5.5.4"
